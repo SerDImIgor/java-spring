@@ -1,0 +1,18 @@
+.btnDel {
+    background:url('/delete.svg') no-repeat left center;
+    width: 64px;
+    height: 64px;
+
+ }    
+
+ .btnEdit {
+    background:url('/edit.svg') no-repeat left center;
+    width: 64px;
+    height: 64px;
+ }
+
+ .btnSave {
+   background:url('/save.svg') no-repeat left center;
+   width: 64px;
+   height: 64px;
+}
