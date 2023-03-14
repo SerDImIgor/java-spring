@@ -15,35 +15,34 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ListDoService {
+    
     private final ListDoRepository listRepository;
     
     @Autowired
-    public ListDoService(ListDoRepository listRepository){
+    public ListDoService(ListDoRepository listRepository) {
         this.listRepository = listRepository;
     }
-    public List<ListDo> getListTask(){
+    
+    public List<ListDo> getListTask() {
         return listRepository.findAll();
     }
-    public ListDo addNewTask(ListDo lst){
+    
+    public ListDo addNewTask(ListDo lst) {
         return listRepository.save(lst);
     }
     
-    public ListDo editTask(ListDo lst){
-        Optional<ListDo> task = listRepository.findById(lst.getId());
-        if(task.isPresent())
-            return listRepository.save(lst);
-        else
-            return null;
+    public ListDo editTask(ListDo lst) {
+        return listRepository.save(lst);
     }
-
-    public boolean delTask(Long id){
+    
+    public boolean delTask(Long id) {
         Optional<ListDo> task = listRepository.findById(id);
-        if(task.isPresent()) {
-            listRepository.deleteById(id);
-            return true;
-        } else {
+        if (task.isEmpty()) {
             return false;
         }
+        listRepository.delete(task.get());
+        return true;
+        
     }
-
+    
 }

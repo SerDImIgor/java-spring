@@ -12,6 +12,6 @@ import org.springframework.stereotype.Repository;
  * @author Mad
  */
 @Repository
-public interface ListDoRepository extends JpaRepository<ListDo,Long>{
-    
+public interface ListDoRepository extends JpaRepository<ListDo, Long> {
+
 }

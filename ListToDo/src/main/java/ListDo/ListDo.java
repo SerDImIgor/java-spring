@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @Entity
 @Table
 public class ListDo {
+
     @Id
     @GeneratedValue
     private Long id;
@@ -24,22 +25,23 @@ public class ListDo {
     private Boolean isDone;
     private LocalDate mustDone;
 
-    public ListDo(Long id, String task, Boolean isDone,LocalDate mustDone) {
+    public ListDo(Long id, String task, Boolean isDone, LocalDate mustDone) {
         this.id = id;
-        this.task = task;
-        this.isDone = isDone;
-        this. mustDone = mustDone;
-    }
-    
-    public ListDo(String task, Boolean isDone,LocalDate mustDone) {
         this.task = task;
         this.isDone = isDone;
         this.mustDone = mustDone;
     }
-    
+
+    public ListDo(String task, Boolean isDone, LocalDate mustDone) {
+        this.task = task;
+        this.isDone = isDone;
+        this.mustDone = mustDone;
+    }
+
     public ListDo() {
 
     }
+
     public LocalDate getMustDone() {
         return this.mustDone;
     }
@@ -77,5 +79,4 @@ public class ListDo {
         return "ListDo{" + "id=" + id + ", task=" + task + ", isDone=" + isDone + ", mustDone=" + mustDone + '}';
     }
 
-    
 }

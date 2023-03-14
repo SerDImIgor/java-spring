@@ -16,12 +16,13 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class ListDoConf {
+
     @Bean
     CommandLineRunner commandLineRunner(ListDoRepository listDoRepository) {
         return args -> {
-          ListDo ts1 = new ListDo("Sleep",true,LocalDate.of(2000,6, 10));
-          ListDo ts2 = new ListDo("Work",false,LocalDate.of(2000,6, 10));
-          listDoRepository.saveAll(List.of(ts1,ts2));
+            ListDo ts1 = new ListDo("Sleep", true, LocalDate.of(2000, 6, 10));
+            ListDo ts2 = new ListDo("Work", false, LocalDate.of(2000, 6, 10));
+            listDoRepository.saveAll(List.of(ts1, ts2));
         };
     }
 

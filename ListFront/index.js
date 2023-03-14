@@ -1,133 +1,125 @@
-class CustomerError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = 'CustomerError';
-    }
-}
+
 const lstTask = document.getElementById("list_task")
 const addTask = document.getElementById("add_task");
 const nameTask = document.getElementById("name_task");
 const dateMustDone = document.getElementById("date_must_done");
+const URL_ADDRESS = "http://localhost:8080"
 
-
-async function getData(url) {
-    const response = await fetch(url, {
-        method: 'GET',
+async function makeRequest(url,method,dt = null) {
+    const obj = {
+        method: method,
         mode: "cors",
         headers: {
             'Content-Type': 'application/json'
-        },
-        redirect: 'follow',
-    });
+        }
+    }
+    if (dt!==null) {
+        obj['body'] = JSON.stringify(dt);
+    }
+    let response;
+    try {
+        response = await fetch(url,obj);
+    } catch(err) {
+        console.log(`It seems that you do not have an internet connection or the server is not available ${err.message}`);
+        return null;
+    }
     if (!response.ok) {
-        throw new CustomerError(`Server return bad response code (${response.status}) ${response.statusText} `);
+        console.log(`Server return bad response code (${response.status}) ${response.statusText} `);
+        return null;
     }
     return response.json();
 }
 
 async function deleteTask (e) {
-    try {
-        const dt = e.target.id.split('_')[2];
-        const res = await postRequest('http://localhost:8080/ListDo/DelTask',dt);
-    } catch(err) {
-        if (err instanceof CustomerError) {
-            console.log(`loadCountries : ${err.message}`);
-        } else {
-            console.log(`It seems that you do not have an internet connection or the server is not available ${err.message}`);
-        }
-    }
+    console.log('deleteTask');
+    await makeRequest(`${URL_ADDRESS}/ListDo/DelTask`,'DELETE',e.target.getAttribute('del-button'));
     renderTask();
 }
+
 const generateElement = (element) => {
     const flagStatus = element['isDone'] ? 'Готово' : 'В процессе))';
-    return `<div id="row_${element['id']}" class="row mt-4 d-flex justify-content-start">
-    <div id = "task_name_${element['id']}" class="col-3">
+    return `<div row-element="${element['id']}" class="row mt-4 d-flex justify-content-start">
+    <div task-name="${element['id']}" class="col-3">
       ${element['task']}
     </div>
-    <div id = "flag_status_${element['id']}" class="col-3">
+    <div flag-status="${element['id']}" class="col-3">
         ${flagStatus}
     </div>
-    <div id="must_done_${element['id']}" class="col-3">
+    <div must-done="${element['id']}" class="col-3">
         ${element['mustDone']}
     </div>
     <div class="col-3">
         <div class="row">
             <div class="col">
-                <button id="btn_edit_${element['id']}" class="btn btn-primary btnEdit"></button>
+                <button edit-button = "${element['id']}" class="btn btn-primary btnEdit"></button>
             </div>
             <div class="col">
-                <button id="btn_del_${element['id']}" class="btn btn-primary btnDel"></button>
+                <button del-button = "${element['id']}" class="btn btn-primary btnDel"></button>
             </div>
         </div>
     </div>
   </div>
-  <div id="flag_status_bool_${element['id']}" style="display:none"> ${element['isDone']} </div>`
+  <div flag-status-bool = "${element['id']}" style="display:none"> ${element['isDone']} </div>`
 }
+
 
 async function updateData(id) {
-    const task_name = document.getElementById(`edit_name_task_${id}`).value;
-    const is_check = document.getElementById(`flex_check_default_${id}`).checked;
-    const time_done = document.getElementById(`edit_date_must_done_${id}`).value;
-    try {
-        const dt = {'id':id,'task' : task_name,'isDone':is_check,'mustDone':time_done};
-        const res = await postRequest('http://localhost:8080/ListDo/EditTask',dt);
-        const element = document.getElementById(`edit_data_row_${id}`);
+    const task_name = document.querySelector(`[edit-name-task = "${id}"]`).value;
+    const is_check = document.querySelector(`[edit-check-value = "${id}"]`).checked;
+    const time_done = document.querySelector(`[edit-date-must-done = "${id}"]`).value;
+    const dt = {'id' : id,'task' : task_name,'isDone' : is_check,'mustDone' : time_done};
+    const res = await makeRequest(`${URL_ADDRESS}/ListDo/EditTask`,'PUT',dt);
+
+    if (res!==null) {
+        const element = document.querySelector(`[edit-data-row = "${id}"]`);
         element.outerHTML = generateElement(res);
 
-        document.getElementById(`btn_del_${id}`).addEventListener("click",deleteTask);
-        document.getElementById(`btn_edit_${id}`).addEventListener("click",editTask)
-    } catch(err) {
-        if (err instanceof CustomerError) {
-            console.log(`loadCountries : ${err.message}`);
-        } else {
-            console.log(`It seems that you do not have an internet connection or the server is not available ${err.message}`);
-        }
+        document.querySelector(`[del-button = "${id}"]`).addEventListener("click",deleteTask);
+        document.querySelector(`[edit-button = "${id}"]`).addEventListener("click",editTask)
     }
 }
-
-function editTask(e) {
-    const id_data = e.target.id.split('_')[2];
-    const element = document.getElementById(`row_${id_data}`);
-    const task_name = document.getElementById(`task_name_${id_data}`).innerText;
-    const time_done = document.getElementById(`must_done_${id_data}`).innerText;
-    const flag_text = document.getElementById(`flag_status_bool_${id_data}`).innerText;
-    const flag_bool = (flag_text.trim() === 'true');
-    element.outerHTML = `<div id = "edit_data_row_${id_data}" class="row mt-4 d-flex justify-content-start">
+const createEditForm = (id_record,task_name,flag_bool,time_done) =>{
+    const element = document.querySelector(`[row-element = "${id_record}"]`);
+    console.log(element);
+    element.outerHTML = `<div edit-data-row="${id_record}" class="row mt-4 d-flex justify-content-start">
         <div class="col-3">
-            <input id = "edit_name_task_${id_data}" class = "form-control" placeholder = "Enter task" type = "text" value="${task_name}" >
+            <input edit-name-task="${id_record}" class = "form-control" placeholder = "Enter task" type = "text" value="${task_name}" >
         </div>
         <div class="col-3">
-            <input class="form-check-input" type="checkbox" ${flag_bool === true ?'checked':''} id="flex_check_default_${id_data}">
+            <input class="form-check-input" type="checkbox" ${flag_bool === true ?'checked':''} edit-check-value = "${id_record}">
             <label class="form-check-label" for="flexCheckDefault">
                 Готово
             </label>
         </div>
         <div class="col-3">
-            <input id = "edit_date_must_done_${id_data}" class="form-control" type = "date" value="${time_done}" >
+            <input edit-date-must-done = "${id_record}" class="form-control" type = "date" value="${time_done}" >
         </div>
         <div class="col-3">
-            <button id="save_change_task_${id_data}" onClick="updateData(${id_data})" class="btn btn-primary btnSave"></button>
+            <button onClick="updateData(${id_record})" class="btn btn-primary btnSave"></button>
         </div>
-        </div>`
+    </div>`    
 }
 
+function editTask(e) {
+    const id_data = e.target.getAttribute('edit-button'); 
+    const task_name = document.querySelector(`[task-name = "${id_data}"]`).innerText;
+    const time_done = document.querySelector(`[must-done = "${id_data}"]`).innerText;
+    const flag_text = document.querySelector(`[flag-status-bool = "${id_data}"]`).innerText;
+    const flag_bool = (flag_text.trim() === 'true');
+    createEditForm(id_data,task_name,flag_bool,time_done);
+}
 
 async function renderTask() {
-    let countries;
-    try{
-        // replace yours ip
-        countries = await getData('http://localhost:8080/ListDo');
-        lstTask.innerHTML = '';
-        countries.forEach(element => {
-            lstTask.innerHTML += generateElement(element);
-        });
-    } catch (err) {
-        if (err instanceof CustomerError) {
-            console.log(`loadCountries : ${err.message}`);
-        } else {
-            console.log(`It seems that you do not have an internet connection or the server is not available ${err.message}`);
-        }
+
+    const task = await makeRequest(`${URL_ADDRESS}/ListDo`,'GET');
+    if(task===null){
+        return ;
     }
+    lstTask.innerHTML = '';
+    task.forEach(element => {
+        lstTask.innerHTML += generateElement(element);
+    });
+
     const deleteTaskEl = document.getElementsByClassName("btnDel");
     for (let i = 0; i < deleteTaskEl.length; i++) {
         deleteTaskEl.item(i).addEventListener("click",deleteTask)
@@ -138,22 +130,6 @@ async function renderTask() {
     }
 }
 
-async function postRequest(url,dt) {
-    const response = await fetch(url, {
-        method: 'POST',
-        mode: "cors",
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body : JSON.stringify(dt)
-    });
-    if (!response.ok) {
-        throw new CustomerError(`Server return bad response code (${response.status}) ${response.statusText} `);
-    }
-    return response.json();
-}
-
-
 ( async ()=>{
     renderTask();
     dateMustDone.value = '2023-01-01';
@@ -163,18 +139,16 @@ async function postRequest(url,dt) {
             alert('Task name is not set');
             return;
         }
-        try {
-            const dt = {'task' : nameTask.value,'isDone':false,'mustDone': dateMustDone.value};
-            const res = await postRequest('http://localhost:8080/ListDo/AddTask',dt);
-            nameTask.value = '';
-            dateMustDone.value = '2023-01-01';
-        } catch(err) {
-            if (err instanceof CustomerError) {
-                console.log(`loadCountries : ${err.message}`);
-            } else {
-                console.log(`It seems that you do not have an internet connection or the server is not available ${err.message}`);
-            }
+        const dt = {'task' : nameTask.value,'isDone':false,'mustDone': dateMustDone.value};
+        const res = await makeRequest(`${URL_ADDRESS}/ListDo/AddTask`,'POST',dt);
+        console.log(res);
+        if(res!==null) {
+            lstTask.innerHTML += generateElement(res);
+            document.querySelector(`[del-button = "${res['id']}"]`).addEventListener("click",deleteTask);
+            document.querySelector(`[edit-button = "${res['id']}"]`).addEventListener("click",editTask)
+    
         }
-        renderTask();
+        nameTask.value = '';
+        dateMustDone.value = '2023-01-01';
     })
 })();
